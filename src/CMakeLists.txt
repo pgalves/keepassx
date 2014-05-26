@@ -130,6 +130,12 @@ if(NOT GCRYPT_HAS_SALSA20)
   )
 endif()
 
+if(YUBIKEY_FOUND)
+  set(keepassx_SOURCES ${keepassx_SOURCES} keys/drivers/YubiKey.cpp)
+else()
+  set(keepassx_SOURCES ${keepassx_SOURCES} keys/drivers/YubiKeyStub.cpp)
+endif()
+
 set(keepassx_SOURCES_MAINEXE
     main.cpp
 )
@@ -186,6 +192,7 @@ set(keepassx_MOC
     gui/group/GroupModel.h
     gui/group/GroupView.h
     keys/CompositeKey_p.h
+    keys/drivers/YubiKey.h
     streams/HashedBlockStream.h
     streams/LayeredStream.h
     streams/qtiocompressor.h
@@ -236,6 +243,10 @@ target_link_libraries(${PROGNAME}
 
 if(UNIX AND NOT APPLE)
   target_link_libraries(${PROGNAME} ${QT_QTDBUS_LIBRARY})
+endif()
+
+if(YUBIKEY_FOUND)
+  target_link_libraries(${PROGNAME} ${YUBIKEY_LIBRARIES})
 endif()
 
 set_target_properties(${PROGNAME} PROPERTIES ENABLE_EXPORTS ON)
