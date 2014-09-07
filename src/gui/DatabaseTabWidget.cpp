@@ -265,9 +265,8 @@ void DatabaseTabWidget::saveDatabase(Database* db)
 
         QSaveFile saveFile(dbStruct.filePath);
         if (saveFile.open(QIODevice::WriteOnly)) {
-            m_writer.writeDatabase(&saveFile, db);
 
-            if (m_writer.hasError()) {
+            if (!m_writer.writeDatabase(&saveFile, db) || m_writer.hasError()) {
                 saveFile.cancelWriting();
             }
 
