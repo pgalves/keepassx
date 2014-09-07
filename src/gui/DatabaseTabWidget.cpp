@@ -262,11 +262,13 @@ void DatabaseTabWidget::saveDatabase(Database* db)
 
     if (dbStruct.saveToFilename) {
         bool result = false;
+        QString errorString;
 
         QSaveFile saveFile(dbStruct.filePath);
         if (saveFile.open(QIODevice::WriteOnly)) {
 
             if (!m_writer.writeDatabase(&saveFile, db) || m_writer.hasError()) {
+                errorString = m_writer.errorString();
                 saveFile.cancelWriting();
             }
 
@@ -278,8 +280,11 @@ void DatabaseTabWidget::saveDatabase(Database* db)
             updateTabName(db);
         }
         else {
+            if (errorString.length() == 0) {
+                saveFile.errorString();
+            }
             MessageBox::critical(this, tr("Error"), tr("Writing the database failed.") + "\n\n"
-                                 + saveFile.errorString());
+                                 + errorString);
         }
     }
     else {
