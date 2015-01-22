@@ -34,6 +34,9 @@ ChangeMasterKeyWidget::ChangeMasterKeyWidget(QWidget* parent)
 {
     m_ui->setupUi(this);
 
+    m_ui->ykMessageWidget->setHidden(true);
+    m_ui->messageWidget->setHidden(true);
+
     connect(m_ui->buttonBox, SIGNAL(accepted()), SLOT(generateKey()));
     connect(m_ui->buttonBox, SIGNAL(rejected()), SLOT(reject()));
     m_ui->togglePasswordButton->setIcon(filePath()->onOffIcon("actions", "password-show"));
@@ -41,6 +44,7 @@ ChangeMasterKeyWidget::ChangeMasterKeyWidget(QWidget* parent)
     m_ui->repeatPasswordEdit->enableVerifyMode(m_ui->enterPasswordEdit);
     connect(m_ui->createKeyFileButton, SIGNAL(clicked()), SLOT(createKeyFile()));
     connect(m_ui->browseKeyFileButton, SIGNAL(clicked()), SLOT(browseKeyFile()));
+    connect(m_ui->challengeResponseGroup, SIGNAL(toggled(bool)), SLOT(setChallengeResponse(bool)));
 }
 
 ChangeMasterKeyWidget::~ChangeMasterKeyWidget()
@@ -56,9 +60,14 @@ void ChangeMasterKeyWidget::createKeyFile()
         QString errorMsg;
         bool created = FileKey::create(fileName, &errorMsg);
         if (!created) {
-            MessageBox::warning(this, tr("Error"), tr("Unable to create Key File : ") + errorMsg);
+            m_ui->messageWidget->setText(tr("Unable to create Key File : ") + errorMsg);
+            m_ui->messageWidget->setWordWrap(false);
+            m_ui->messageWidget->setMessageType(KMessageWidget::Error);
+            m_ui->messageWidget->animatedShow();
         }
         else {
+            m_ui->messageWidget->animatedHide();
+
             m_ui->keyFileCombo->setEditText(fileName);
         }
     }
@@ -113,6 +122,7 @@ void ChangeMasterKeyWidget::generateKey()
 
     if (m_ui->passwordGroup->isChecked()) {
         if (m_ui->enterPasswordEdit->text() == m_ui->repeatPasswordEdit->text()) {
+            m_ui->messageWidget->animatedHide();
             if (m_ui->enterPasswordEdit->text().isEmpty()) {
                 if (MessageBox::question(this, tr("Question"),
                                          tr("Do you really want to use an empty string as password?"),
@@ -123,7 +133,11 @@ void ChangeMasterKeyWidget::generateKey()
             m_key.addKey(PasswordKey(m_ui->enterPasswordEdit->text()));
         }
         else {
-            MessageBox::warning(this, tr("Error"), tr("Different passwords supplied."));
+            m_ui->messageWidget->setText(tr("Different passwords supplied."));
+            m_ui->messageWidget->setWordWrap(false);
+            m_ui->messageWidget->setMessageType(KMessageWidget::Warning);
+            m_ui->messageWidget->animatedShow();
+
             m_ui->enterPasswordEdit->setText("");
             m_ui->repeatPasswordEdit->setText("");
             return;
@@ -149,16 +163,27 @@ void ChangeMasterKeyWidget::generateKey()
     Q_EMIT editFinished(true);
 }
 
+void ChangeMasterKeyWidget::setChallengeResponse(bool enable)
+{
+    if (enable && m_yklocking) {
+        m_ui->ykMessageWidget->setText(tr("You need to press the Yubikey button after selecting OK."));
+        m_ui->ykMessageWidget->animatedShow();
+    } else {
+        m_ui->ykMessageWidget->setHidden(true);
+    }
+}
 
 void ChangeMasterKeyWidget::reject()
 {
     Q_EMIT editFinished(false);
 }
 
-
 void ChangeMasterKeyWidget::ykDetected(int slot, bool blocking)
 {
     YkChallengeResponseKey yk(slot, blocking);
+    m_yklocking = blocking;
     m_ui->challengeResponseCombo->addItem(yk.getName(), QVariant(slot));
     m_ui->challengeResponseGroup->setEnabled(true);
 }
+
+

@@ -24,7 +24,6 @@
 #include "core/Database.h"
 #include "core/FilePath.h"
 #include "gui/FileDialog.h"
-#include "gui/MessageBox.h"
 #include "format/KeePass2Reader.h"
 #include "keys/FileKey.h"
 #include "keys/PasswordKey.h"
@@ -46,6 +45,8 @@ DatabaseOpenWidget::DatabaseOpenWidget(QWidget* parent)
 
     m_ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 
+    m_ui->messageWidget->setHidden(true);
+
     m_ui->buttonTogglePassword->setIcon(filePath()->onOffIcon("actions", "password-show"));
     connect(m_ui->buttonTogglePassword, SIGNAL(toggled(bool)),
             m_ui->editPassword, SLOT(setShowPassword(bool)));
@@ -54,11 +55,11 @@ DatabaseOpenWidget::DatabaseOpenWidget(QWidget* parent)
     connect(m_ui->editPassword, SIGNAL(textChanged(QString)), SLOT(activatePassword()));
     connect(m_ui->comboKeyFile, SIGNAL(editTextChanged(QString)), SLOT(activateKeyFile()));
     connect(m_ui->comboChallengeResponse, SIGNAL(activated(int)), SLOT(activateChallengeResponse()));
+    connect(m_ui->checkChallengeResponse, SIGNAL(toggled(bool)), SLOT(toggleChallengeResponse(bool)));
 
     connect(m_ui->checkPassword, SIGNAL(toggled(bool)), SLOT(setOkButtonEnabled()));
     connect(m_ui->checkKeyFile, SIGNAL(toggled(bool)), SLOT(setOkButtonEnabled()));
     connect(m_ui->comboKeyFile, SIGNAL(editTextChanged(QString)), SLOT(setOkButtonEnabled()));
-    connect(m_ui->checkChallengeResponse, SIGNAL(toggled(bool)), SLOT(setOkButtonEnabled()));
     connect(m_ui->comboChallengeResponse, SIGNAL(activated(int)), SLOT(setOkButtonEnabled()));
 
     connect(m_ui->buttonBox, SIGNAL(accepted()), SLOT(openDatabase()));
@@ -117,7 +118,7 @@ void DatabaseOpenWidget::openDatabase()
 
     QFile file(m_filename);
     if (!file.open(QIODevice::ReadOnly)) {
-        // TODO: error message
+        m_ui->messageWidget->showMessageError(tr("Unable to read file.").append("\n"));
         return;
     }
     if (m_db) {
@@ -128,11 +129,13 @@ void DatabaseOpenWidget::openDatabase()
     QApplication::restoreOverrideCursor();
 
     if (m_db) {
+        m_ui->messageWidget->animatedHide();
+
         Q_EMIT editFinished(true);
     }
     else {
-        MessageBox::warning(this, tr("Error"), tr("Unable to open the database.").append("\n")
-                            .append(reader.errorString()));
+        m_ui->messageWidget->showMessageError(tr("Unable to open the database.").append("\n"));
+
         m_ui->editPassword->clear();
     }
 }
@@ -152,7 +155,8 @@ CompositeKey DatabaseOpenWidget::databaseKey()
         QString keyFilename = m_ui->comboKeyFile->currentText();
         QString errorMsg;
         if (!key.load(keyFilename, &errorMsg)) {
-            MessageBox::warning(this, tr("Error"), tr("Can't open key file").append(":\n").append(errorMsg));
+            m_ui->messageWidget->showMessageError(tr("Can't open key file").append(":\n"));
+
             return CompositeKey();
         }
         masterKey.addKey(key);
@@ -196,6 +200,19 @@ void DatabaseOpenWidget::activateChallengeResponse()
     m_ui->checkChallengeResponse->setChecked(true);
 }
 
+void DatabaseOpenWidget::toggleChallengeResponse(bool enable)
+{
+    if (enable && ykblocking) {
+        m_ui->ykMessageWidget->setText(tr("You need to press the Yubikey button after selecting OK."));
+        m_ui->ykMessageWidget->setMessageType(KMessageWidget::Information);
+        m_ui->ykMessageWidget->animatedShow();
+    } else {
+        m_ui->ykMessageWidget->setHidden(true);
+    }
+
+    setOkButtonEnabled();
+}
+
 void DatabaseOpenWidget::setOkButtonEnabled()
 {
     bool enable = m_ui->checkPassword->isChecked() || m_ui->checkChallengeResponse->isChecked()
@@ -217,7 +234,9 @@ void DatabaseOpenWidget::browseKeyFile()
 void DatabaseOpenWidget::ykDetected(int slot, bool blocking)
 {
     YkChallengeResponseKey yk(slot, blocking);
+    ykblocking = blocking;
     m_ui->comboChallengeResponse->addItem(yk.getName(), QVariant(slot));
     m_ui->comboChallengeResponse->setEnabled(true);
     m_ui->checkChallengeResponse->setEnabled(true);
+    m_ui->checkChallengeResponse->setChecked(true);
 }

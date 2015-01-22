@@ -60,7 +60,12 @@ DatabaseWidget::DatabaseWidget(Database* db, QWidget* parent)
     m_searchTimer->setSingleShot(true);
 
     m_mainWidget = new QWidget(this);
-    QLayout* layout = new QHBoxLayout(m_mainWidget);
+    m_messageWidget = new KMessageWidget(this);
+    m_messageWidget->setHidden(true);
+    QVBoxLayout* mainLayout = new QVBoxLayout();
+    QLayout* layout = new QHBoxLayout();
+    mainLayout->addWidget(m_messageWidget);
+    mainLayout->addLayout(layout);
     m_splitter = new QSplitter(m_mainWidget);
     m_splitter->setChildrenCollapsible(false);
 
@@ -106,7 +111,7 @@ DatabaseWidget::DatabaseWidget(Database* db, QWidget* parent)
     m_splitter->setStretchFactor(1, 70);
 
     layout->addWidget(m_splitter);
-    m_mainWidget->setLayout(layout);
+    m_mainWidget->setLayout(mainLayout);
 
     m_editEntryWidget = new EditEntryWidget();
     m_editEntryWidget->setObjectName("editEntryWidget");
@@ -883,4 +888,16 @@ QStringList DatabaseWidget::customEntryAttributes() const
 bool DatabaseWidget::isGroupSelected() const
 {
     return m_groupView->currentGroup() != Q_NULLPTR;
+}
+
+void DatabaseWidget::showMessage(const QString& text, KMessageWidget::MessageType type)
+{
+    m_messageWidget->setMessageType(type);
+    m_messageWidget->setText(text);
+    m_messageWidget->animatedShow();
+}
+
+void DatabaseWidget::hideMessage()
+{
+    m_messageWidget->animatedHide();
 }

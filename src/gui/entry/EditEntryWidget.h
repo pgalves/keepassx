@@ -38,6 +38,7 @@ class QButtonGroup;
 class QMenu;
 class QSortFilterProxyModel;
 class QStackedLayout;
+class KMessageWidget;
 
 namespace Ui {
     class EditEntryWidgetAdvanced;
@@ -133,6 +134,7 @@ private:
     AutoTypeAssociationsModel* const m_autoTypeAssocModel;
     QButtonGroup* const m_autoTypeDefaultSequenceGroup;
     QButtonGroup* const m_autoTypeWindowSequenceGroup;
+    KMessageWidget* m_messageWidget;
 
     Q_DISABLE_COPY(EditEntryWidget)
 };

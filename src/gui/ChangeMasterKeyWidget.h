@@ -48,10 +48,12 @@ private Q_SLOTS:
     void createKeyFile();
     void browseKeyFile();
     void ykDetected(int slot, bool blocking);
+    void setChallengeResponse(bool enable);
 
 private:
     const QScopedPointer<Ui::ChangeMasterKeyWidget> m_ui;
     CompositeKey m_key;
+    bool m_yklocking;
 
     Q_DISABLE_COPY(ChangeMasterKeyWidget)
 };

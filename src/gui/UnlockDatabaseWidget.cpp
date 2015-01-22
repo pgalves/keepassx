@@ -19,7 +19,6 @@
 
 #include "ui_DatabaseOpenWidget.h"
 #include "core/Database.h"
-#include "gui/MessageBox.h"
 
 UnlockDatabaseWidget::UnlockDatabaseWidget(QWidget* parent)
     : DatabaseOpenWidget(parent)
@@ -47,9 +46,15 @@ void UnlockDatabaseWidget::openDatabase()
 
     if (m_db->verifyKey(masterKey)) {
         Q_EMIT editFinished(true);
+
+        m_ui->messageWidget->animatedHide();
     }
     else {
-        MessageBox::warning(this, tr("Error"), tr("Wrong key."));
+        m_ui->messageWidget->setText(tr("Wrong key."));
+        m_ui->messageWidget->setWordWrap(false);
+        m_ui->messageWidget->setMessageType(KMessageWidget::Error);
+        m_ui->messageWidget->animatedShow();
+
         m_ui->editPassword->clear();
     }
 }

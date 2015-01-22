@@ -7,13 +7,16 @@
     <x>0</x>
     <y>0</y>
     <width>596</width>
-    <height>250</height>
+    <height>271</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0,1,0,0,3">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0,0,1,0,0,3">
    <property name="spacing">
     <number>8</number>
    </property>
+   <item>
+    <widget class="MessageWidget" name="messageWidget" native="true"/>
+   </item>
    <item>
     <spacer name="verticalSpacer_2">
      <property name="orientation">
@@ -55,10 +58,13 @@
      <property name="verticalSpacing">
       <number>8</number>
      </property>
-     <item row="1" column="0">
-      <widget class="QCheckBox" name="checkKeyFile">
+     <item row="4" column="0">
+      <widget class="QCheckBox" name="checkChallengeResponse">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
-        <string>Key File:</string>
+        <string>Challenge Response:</string>
        </property>
       </widget>
      </item>
@@ -66,6 +72,13 @@
       <widget class="QCheckBox" name="checkPassword">
        <property name="text">
         <string>Password:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2">
+      <widget class="QComboBox" name="comboChallengeResponse">
+       <property name="enabled">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -86,6 +99,9 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item row="5" column="2">
+      <widget class="KMessageWidget" name="ykMessageWidget" native="true"/>
      </item>
      <item row="1" column="2">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -111,20 +127,10 @@
        </item>
       </layout>
      </item>
-     <item row="4" column="0">
-      <widget class="QCheckBox" name="checkChallengeResponse">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
+     <item row="1" column="0">
+      <widget class="QCheckBox" name="checkKeyFile">
        <property name="text">
-        <string>Challenge Response:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="2">
-      <widget class="QComboBox" name="comboChallengeResponse">
-       <property name="enabled">
-        <bool>false</bool>
+        <string>Key File:</string>
        </property>
       </widget>
      </item>
@@ -160,6 +166,18 @@
    <class>PasswordEdit</class>
    <extends>QLineEdit</extends>
    <header>gui/PasswordEdit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>KMessageWidget</class>
+   <extends>QWidget</extends>
+   <header>gui/kmessagewidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MessageWidget</class>
+   <extends>QWidget</extends>
+   <header>gui/MessageWidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>

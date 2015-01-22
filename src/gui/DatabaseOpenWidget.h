@@ -46,6 +46,7 @@ Q_SIGNALS:
 
 protected:
     CompositeKey databaseKey();
+    bool ykblocking;
 
 protected Q_SLOTS:
     virtual void openDatabase();
@@ -55,6 +56,7 @@ private Q_SLOTS:
     void activatePassword();
     void activateKeyFile();
     void activateChallengeResponse();
+    void toggleChallengeResponse(bool enabled);
     void setOkButtonEnabled();
     void browseKeyFile();
     void ykDetected(int slot, bool blocking);

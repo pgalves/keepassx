@@ -110,7 +110,7 @@ void DatabaseTabWidget::openDatabase(const QString& fileName, const QString& pw,
     QFileInfo fileInfo(fileName);
     QString canonicalFilePath = fileInfo.canonicalFilePath();
     if (canonicalFilePath.isEmpty()) {
-        MessageBox::warning(this, tr("Warning"), tr("File not found!"));
+        m_dbWidgetSateSync->displayMessage(tr("File not found!"), KMessageWidget::Warning);
         return;
     }
 
@@ -132,11 +132,14 @@ void DatabaseTabWidget::openDatabase(const QString& fileName, const QString& pw,
     if (!file.open(QIODevice::ReadWrite)) {
         if (!file.open(QIODevice::ReadOnly)) {
             // can't open
-            // TODO: error message
+            m_dbWidgetSateSync->displayMessage(tr("Can't open file") + file.errorString(),
+                                               KMessageWidget::Error);
             return;
         }
         else {
             // can only open read-only
+            m_dbWidgetSateSync->displayMessage(tr("File opened in read only mode"),
+                                               KMessageWidget::Information);
             dbStruct.readOnly = true;
         }
     }
@@ -273,6 +276,8 @@ void DatabaseTabWidget::saveDatabase(Database* db)
             }
 
             result = saveFile.commit();
+            // If an error message is displayed hide it
+            dbStruct.dbWidget->hideMessage();
         }
 
         if (result) {
@@ -283,8 +288,8 @@ void DatabaseTabWidget::saveDatabase(Database* db)
             if (errorString.length() == 0) {
                 saveFile.errorString();
             }
-            MessageBox::critical(this, tr("Error"), tr("Writing the database failed.") + "\n\n"
-                                 + errorString);
+            m_dbWidgetSateSync->displayMessage(tr("Writing the database failed.") + "\n"
+                                               + errorString, KMessageWidget::Error);
         }
     }
     else {
@@ -308,6 +313,8 @@ void DatabaseTabWidget::saveDatabaseAs(Database* db)
         if (saveFile.open(QIODevice::WriteOnly)) {
             m_writer.writeDatabase(&saveFile, db);
             result = saveFile.commit();
+            // If an error message is displayed hide it
+            dbStruct.dbWidget->hideMessage();
         }
 
         if (result) {
@@ -322,8 +329,9 @@ void DatabaseTabWidget::saveDatabaseAs(Database* db)
             updateLastDatabases(dbStruct.filePath);
         }
         else {
-            MessageBox::critical(this, tr("Error"), tr("Writing the database failed.") + "\n\n"
-                                 + saveFile.errorString());
+            m_dbWidgetSateSync->displayMessage(tr("Writing the database failed.") + "\n\n"
+                                               + saveFile.errorString(),
+                                                           KMessageWidget::Error);
         }
     }
 }

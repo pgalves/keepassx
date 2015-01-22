@@ -71,8 +71,6 @@ void DatabaseWidgetStateSync::setActive(DatabaseWidget* dbWidget)
                 SLOT(restoreSearchView()));
         connect(m_activeDbWidget, SIGNAL(listModeAboutToActivate()),
                 SLOT(blockUpdates()));
-        connect(m_activeDbWidget, SIGNAL(searchModeAboutToActivate()),
-                SLOT(blockUpdates()));
     }
 }
 
@@ -151,4 +149,18 @@ QVariant DatabaseWidgetStateSync::intListToVariant(const QList<int>& list)
     }
 
     return result;
+}
+
+void DatabaseWidgetStateSync::displayMessage(const QString& text, KMessageWidget::MessageType type)
+{
+    Q_ASSERT(if(m_activeDbWidget));
+
+    m_activeDbWidget->showMessage(text, type);
+}
+
+void DatabaseWidgetStateSync::hideMessage()
+{
+    Q_ASSERT(if(m_activeDbWidget));
+
+    m_activeDbWidget->hideMessage();
 }

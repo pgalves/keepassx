@@ -27,6 +27,8 @@ class DatabaseWidgetStateSync : public QObject
 
 public:
     explicit DatabaseWidgetStateSync(QObject* parent = Q_NULLPTR);
+    void displayMessage(const QString& text, KMessageWidget::MessageType type);
+    void hideMessage();
     ~DatabaseWidgetStateSync();
 
 public Q_SLOTS:

@@ -24,6 +24,8 @@ EditWidget::EditWidget(QWidget* parent)
 {
     m_ui->setupUi(this);
 
+    m_ui->messageWidget->setHidden(true);
+
     QFont headerLabelFont = m_ui->headerLabel->font();
     headerLabelFont.setBold(true);
     headerLabelFont.setPointSize(headerLabelFont.pointSize() + 2);
@@ -67,4 +69,16 @@ void EditWidget::setHeadline(const QString& text)
 QLabel* EditWidget::headlineLabel()
 {
     return m_ui->headerLabel;
+}
+
+void EditWidget::showMessage(const QString& text, KMessageWidget::MessageType type)
+{
+    m_ui->messageWidget->setText(text);
+    m_ui->messageWidget->setMessageType(type);
+    m_ui->messageWidget->animatedShow();
+}
+
+void EditWidget::hideMessage()
+{
+    m_ui->messageWidget->animatedHide();
 }

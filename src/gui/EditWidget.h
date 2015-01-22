@@ -21,8 +21,10 @@
 #include <QScopedPointer>
 
 #include "gui/DialogyWidget.h"
+#include "gui/kmessagewidget.h"
 
 class QLabel;
+class KMessageWidget;
 
 namespace Ui {
     class EditWidget;
@@ -45,6 +47,10 @@ public:
 Q_SIGNALS:
     void accepted();
     void rejected();
+
+protected:
+    void showMessage(const QString& text, KMessageWidget::MessageType type);
+    void hideMessage();
 
 private:
     const QScopedPointer<Ui::EditWidget> m_ui;
