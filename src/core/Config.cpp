@@ -90,7 +90,6 @@ void Config::init(const QString& fileName)
 
     m_defaults.insert("RememberLastDatabases", true);
     m_defaults.insert("OpenPreviousDatabasesOnStartup", true);
-    m_defaults.insert("ModifiedOnExpandedStateChanges", true);
     m_defaults.insert("AutoSaveAfterEveryChange", false);
     m_defaults.insert("AutoSaveOnExit", false);
     m_defaults.insert("ShowToolbar", true);
@@ -104,6 +103,8 @@ void Config::init(const QString& fileName)
     m_defaults.insert("security/passwordscleartext", false);
     m_defaults.insert("security/autotypeask", true);
     m_defaults.insert("GUI/Language", "system");
+    m_defaults.insert("GUI/ShowTrayIcon", false);
+    m_defaults.insert("GUI/MinimizeToTray", false);
 }
 
 Config* Config::instance()

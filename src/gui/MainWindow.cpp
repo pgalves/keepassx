@@ -33,6 +33,7 @@ const QString MainWindow::BaseWindowTitle = "KeePassX";
 
 MainWindow::MainWindow()
     : m_ui(new Ui::MainWindow())
+    , m_trayIcon(Q_NULLPTR)
 {
     m_ui->setupUi(this);
 
@@ -200,7 +201,9 @@ MainWindow::MainWindow()
     connect(m_ui->actionAbout, SIGNAL(triggered()), SLOT(showAboutDialog()));
 
     m_actionMultiplexer.connect(m_ui->actionSearch, SIGNAL(triggered()),
-                                SLOT(toggleSearch()));
+                                SLOT(openSearch()));
+
+    updateTrayIcon();
 }
 
 MainWindow::~MainWindow()
@@ -232,7 +235,7 @@ void MainWindow::updateCopyAttributesMenu()
     }
 
     QList<QAction*> actions = m_ui->menuEntryCopyAttribute->actions();
-    for (int i = m_countDefaultAttributes + 1; i < actions.size(); i++) {
+    for (int i = m_countDefaultAttributes; i < actions.size(); i++) {
         delete actions[i];
     }
 
@@ -292,9 +295,8 @@ void MainWindow::setMenuActionState(DatabaseWidget::Mode mode)
             m_ui->actionGroupNew->setEnabled(groupSelected);
             m_ui->actionGroupEdit->setEnabled(groupSelected);
             m_ui->actionGroupDelete->setEnabled(groupSelected && dbWidget->canDeleteCurrentGroup());
-            m_ui->actionSearch->setEnabled(true);
             // TODO: get checked state from db widget
-            m_ui->actionSearch->setChecked(inSearch);
+            m_ui->actionSearch->setEnabled(true);
             m_ui->actionChangeMasterKey->setEnabled(true);
             m_ui->actionChangeDatabaseSettings->setEnabled(true);
             m_ui->actionDatabaseSave->setEnabled(true);
@@ -318,7 +320,6 @@ void MainWindow::setMenuActionState(DatabaseWidget::Mode mode)
             m_ui->menuEntryCopyAttribute->setEnabled(false);
 
             m_ui->actionSearch->setEnabled(false);
-            m_ui->actionSearch->setChecked(false);
             m_ui->actionChangeMasterKey->setEnabled(false);
             m_ui->actionChangeDatabaseSettings->setEnabled(false);
             m_ui->actionDatabaseSave->setEnabled(false);
@@ -345,7 +346,6 @@ void MainWindow::setMenuActionState(DatabaseWidget::Mode mode)
         m_ui->menuEntryCopyAttribute->setEnabled(false);
 
         m_ui->actionSearch->setEnabled(false);
-        m_ui->actionSearch->setChecked(false);
         m_ui->actionChangeMasterKey->setEnabled(false);
         m_ui->actionChangeDatabaseSettings->setEnabled(false);
         m_ui->actionDatabaseSave->setEnabled(false);
@@ -429,9 +429,23 @@ void MainWindow::closeEvent(QCloseEvent* event)
         saveWindowInformation();
 
         event->accept();
+        QApplication::quit();
     }
     else {
         event->ignore();
+    }
+}
+
+void MainWindow::changeEvent(QEvent *event)
+{
+    if ((event->type() == QEvent::WindowStateChange) && isMinimized()
+            && isTrayIconEnabled() && config()->get("GUI/MinimizeToTray").toBool())
+    {
+        event->ignore();
+        hide();
+    }
+    else {
+        QMainWindow::changeEvent(event);
     }
 }
 
@@ -465,6 +479,35 @@ bool MainWindow::saveLastDatabases()
     }
 
     return accept;
+}
+
+void MainWindow::updateTrayIcon()
+{
+    if (isTrayIconEnabled()) {
+        if (!m_trayIcon) {
+            m_trayIcon = new QSystemTrayIcon(filePath()->applicationIcon(), this);
+
+            QMenu* menu = new QMenu(this);
+
+            QAction* actionToggle = new QAction(tr("Toggle window"), menu);
+            menu->addAction(actionToggle);
+
+            menu->addAction(m_ui->actionQuit);
+
+            connect(m_trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+                    SLOT(trayIconTriggered(QSystemTrayIcon::ActivationReason)));
+            connect(actionToggle, SIGNAL(triggered()), SLOT(toggleWindow()));
+
+            m_trayIcon->setContextMenu(menu);
+            m_trayIcon->show();
+        }
+    }
+    else {
+        if (m_trayIcon) {
+            delete m_trayIcon;
+            m_trayIcon = Q_NULLPTR;
+        }
+    }
 }
 
 void MainWindow::showEntryContextMenu(const QPoint& globalPos)
@@ -511,4 +554,31 @@ void MainWindow::applySettingsChanges()
     else {
         m_inactivityTimer->deactivate();
     }
+
+    updateTrayIcon();
+}
+
+void MainWindow::trayIconTriggered(QSystemTrayIcon::ActivationReason reason)
+{
+    if (reason == QSystemTrayIcon::Trigger) {
+        toggleWindow();
+    }
+}
+
+void MainWindow::toggleWindow()
+{
+    if (QApplication::activeWindow() == this) {
+        hide();
+    }
+    else {
+        show();
+        raise();
+        activateWindow();
+    }
+}
+
+bool MainWindow::isTrayIconEnabled() const
+{
+    return config()->get("GUI/ShowTrayIcon").toBool()
+            && QSystemTrayIcon::isSystemTrayAvailable();
 }
