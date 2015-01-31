@@ -174,7 +174,6 @@ int main(int argc, char **argv)
 
     if (!noPass) {
             newKey.addKey(passKey);
-            fputs(qPrintable("ADDING password.\n"), stdout);
     }
     else if (noPass && !useKey) {
         QString newPassStr, newPassStrConf;
