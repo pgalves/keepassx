@@ -32,13 +32,12 @@ public:
     HmacSha1ChallengeResponseKey* clone() const;
     bool challenge(const QByteArray& chal);
     bool challenge(const QByteArray& chal, YkHmacMode mode);
+    QByteArray hmacSha1(const QByteArray& chal);
 
 private:
     QByteArray m_key;
     QByteArray m_hmackey;
     YkHmacMode m_hmacmode;
-    QByteArray hmacSha1(const QByteArray& chal, QByteArray& key);
-
 };
 
 #endif // KEEPASSX_HMACSHA1_CHALLENGERESPONSEKEY_H
